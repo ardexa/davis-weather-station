@@ -1,0 +1,327 @@
+/* Copyright (c) 2013-2015 Ardexa Pty Ltd. All rights reserved.
+ *
+ * This code is licensed under the MIT License (MIT).
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ */
+
+#include "utils.hpp"
+
+/* Open the file where the log entry will be written, and write the line to it */
+int log_line(bool debug, string directory, string filename, string line)
+{
+    struct stat st_directory;
+    string fullpath;
+    bool write_header = false;
+
+    /* Add an ending '/' to the directory path, if it doesn't exist */
+    if (*directory.rbegin() != '/') {
+        directory += "/";
+    }
+
+    /* Check and create the directory if necessary */
+    if (stat(directory.c_str(), &st_directory) == -1) {
+        if (debug) cout << "Directory doesn't exist. Creating it: " << directory.c_str() << endl;
+        mkdir(directory.c_str(), 0644);
+    }
+
+    fullpath = directory + filename;
+    if (debug) cout << "Full filename: " << fullpath << endl;
+
+    /* Check the full path. If it doesn't exist, the header line will need to be written */
+    if (stat(fullpath.c_str(), &st_directory) == -1) {
+        if (debug) cout << "Fullpath doesn't exist. Path: " << fullpath.c_str() << endl;
+        write_header = true;
+    }
+
+    /* Open it for appending data only */
+    ofstream writer(fullpath, ios::app);
+    if(!writer) {
+        if (debug) cout << "Cannot open logging file: " << fullpath << endl;
+        return 2;
+    }
+    if (write_header) {
+        writer << HEADER_LINE << endl;
+    }
+
+    writer << line << endl;
+    writer.close();
+
+    return 0;
+}
+
+/* Returns the current date as a string */
+string get_current_date()
+{
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[DATESIZE];
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d", timeinfo);
+
+    string date(buffer);
+    return date;
+}
+
+/* Returns the current time as a string */
+string get_current_datetime()
+{
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[DATESIZE];
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    /* This includes the time zone at the end of the time */
+    strftime(buffer, DATESIZE, "%H:%M:%S", timeinfo);
+
+    string time(buffer);
+    string datetime = get_current_date() + "-" + time + "Z";
+
+    return datetime;
+}
+
+/* This function extracts the results, and returns a string */
+string extract_results(char *input_buffer, int chars_received, bool debug)
+{
+    davis_data_t davis_data;
+
+    /* Set all the Davis_data members to error values */
+    davis_data.inside_humidity = ERROR_VALUE_FLOAT;
+    davis_data.outside_humidity = ERROR_VALUE_FLOAT;
+    davis_data.wind_speed = ERROR_VALUE_FLOAT;
+    davis_data.barometer = ERROR_VALUE_FLOAT;
+    davis_data.outside_temperature = ERROR_VALUE_FLOAT;
+    davis_data.inside_temperature = ERROR_VALUE_FLOAT;
+    davis_data.rain = ERROR_VALUE_FLOAT;
+    davis_data.UV = ERROR_VALUE_FLOAT;
+    davis_data.solar_radiation = ERROR_VALUE_FLOAT;
+    davis_data.console_battery = ERROR_VALUE_FLOAT;
+    davis_data.wind_direction = ERROR_VALUE_FLOAT;
+
+    if (debug) cout << "Chars received = " << chars_received << endl;
+    for (int i = 0; i < chars_received; i++) {
+        /* The start of a valid line is 'LOO' */
+        /* Check that there at least 88 chars after 'i' before proceeding */
+        if ((input_buffer[i] == 'L') && (input_buffer[i+1] == 'O') && (input_buffer[i+2] == 'O') && (chars_received - i >= 89)) {
+            if (debug) cout << "Found LOO at offset: " << i << " Val: " << input_buffer[i] << input_buffer[i+1] << input_buffer[i+2] << endl;
+
+            /* Call in the data. For sanity checking this is the plan:
+            If any of the values below are DUD, I don't want to invalidate the whole line.
+            So any parameters below which *appear* to be obviously invalid, will be replaced with the value ERROR_VALUE_FLOAT
+            An error condition will then flagged which will then be sent to the log */
+            if (debug) cout << "Raw barometer offset 7 and 8: " << input_buffer[i+7] << input_buffer[i+8] << endl;
+            /* convert inches of mercury to hectopascals */
+            davis_data.barometer = (float) ((input_buffer[i+8] << 8) | input_buffer[i+7])/1000 * 33.86;
+            if ((davis_data.barometer < 800.0) || (davis_data.barometer > 1100.0)) {
+                davis_data.barometer = ERROR_VALUE_FLOAT;
+            }
+            if (debug) cout << "\tBarometer (hectopascals): " << davis_data.barometer << endl;
+
+            if (debug) cout << "Raw outside temp offset 12 and 13: " << input_buffer[i+12] << input_buffer[i+13] << endl;
+            /* convert Fahrenheit to Celsius */
+            davis_data.outside_temperature =   (( (float) ((input_buffer[i+13] << 8) | input_buffer[i+12])/10) - 32.0) * 5/9;
+            if ((davis_data.outside_temperature < -80.0) || (davis_data.outside_temperature > 100.0)) {
+                davis_data.outside_temperature = ERROR_VALUE_FLOAT;
+            }
+            if (debug) cout << "\tOutside temperature (celsius): " << davis_data.outside_temperature << endl;
+
+            if (debug) cout << "Raw inside temp offset 9 and 10: " << input_buffer[i+9] << input_buffer[i+10] << endl;
+            /* convert Fahrenheit to Celsius */
+            davis_data.inside_temperature =   (((float) ((input_buffer[i+10] << 8) | input_buffer[i+9])/10) - 32.0) * 5/9;
+            if ((davis_data.inside_temperature < -80.0) || (davis_data.inside_temperature > 100.0)) {
+                davis_data.inside_temperature = ERROR_VALUE_FLOAT;
+            }
+            if (debug) cout << "\tInside temperature (Celsius): " << davis_data.inside_temperature << endl;
+
+            if (debug) cout << "Raw wind speed offset 14: " << input_buffer[i+14] << endl;
+            /* convert mph to metres/s */
+            davis_data.wind_speed = (float) (input_buffer[i+14] * 0.44704);
+            if ( (davis_data.wind_speed < 0.0) || (davis_data.wind_speed > 50.0)) {
+                davis_data.wind_speed = ERROR_VALUE_FLOAT;
+            }
+            if (debug) cout << "\tWind speed (m/s): " << davis_data.wind_speed << endl;
+
+            if (debug) cout << "Raw wind direction offset 16 and 17: " << input_buffer[i+16] << input_buffer[i+17] << endl;
+            davis_data.wind_direction = (float) ((input_buffer[i+17] << 8) | input_buffer[i+16]);
+            if ( (davis_data.wind_direction < 0.0) || (davis_data.wind_direction > 360.0)) {
+                davis_data.wind_direction = ERROR_VALUE_FLOAT;
+            }
+            if (debug) cout << "\tWind direction (degs): " << davis_data.wind_direction << endl;
+
+            if (debug) cout << "Raw outside humidity offset 33: " << input_buffer[i+33] << endl;
+            davis_data.outside_humidity = (float) (input_buffer[i+11]);
+            if ((davis_data.outside_humidity < 0.0) || (davis_data.outside_humidity > 100.0)) {
+                davis_data.outside_humidity = ERROR_VALUE_FLOAT;
+            }
+            if (debug) cout << "\tOutside humidity (%): " << davis_data.outside_humidity << endl;
+
+            if (debug) cout << "Raw inside humidity offset 11: " << input_buffer[i+11] << endl;
+            davis_data.inside_humidity = (float) (input_buffer[i+33]);
+            if ((davis_data.inside_humidity < 0.0) || (davis_data.inside_humidity > 100.0)) {
+                davis_data.inside_humidity = ERROR_VALUE_FLOAT;
+            }
+            if (debug) cout << "\tInside humidity (%): " << davis_data.inside_humidity << endl;
+
+            /* Part of the DAVIS protocol doc says UV is read directly, and another section says to divide by 10
+               Correct value seems to be if the raw index is divided by 10. */
+            if (debug) cout << "Raw UV offset 43: "<< input_buffer[i+43]<< endl;
+            davis_data.UV = (float) (input_buffer[i+43])/10;
+            if ((davis_data.UV < 0.0) || (davis_data.UV > 50.0)) {
+                davis_data.UV = ERROR_VALUE_FLOAT;
+            }
+            if (debug) cout << "\tUV index: " << davis_data.UV << endl;
+
+            if (debug) cout << "Raw solar radiation offset 44 and 45: " << input_buffer[i+44] << input_buffer[i+45] << endl;
+            davis_data.solar_radiation =  (float) ((input_buffer[i+45] << 8) | input_buffer[i+44]);
+            if ((davis_data.solar_radiation < 0.0) || (davis_data.solar_radiation > 1800.0)) {
+                davis_data.solar_radiation = ERROR_VALUE_FLOAT;
+            }
+            if (debug) cout << "\tSolar radiation (W/m): " << davis_data.solar_radiation << endl;
+
+            if (debug) cout << "Raw console battery voltage offset 87 and 88: " << input_buffer[i+87] << input_buffer[i+88] << endl;
+            /*  Convert to volts. The formula  is directly from the Davis 'Vantage Pro ® , Vantage Pro2 TM and Vantage Vue ®
+                Serial Communication Reference Manual'
+                Voltage = ((Data * 300)/512)/100.0 */
+            davis_data.console_battery =  (((float) ((input_buffer[i+88] << 8) | input_buffer[i+87])*300)/512)/100.0;
+            if ((davis_data.console_battery < -10.0) || (davis_data.console_battery > 50.0)) {
+                davis_data.console_battery = ERROR_VALUE_FLOAT;
+            }
+            if (debug) cout << "\tConsole battery (volts): " << davis_data.console_battery << endl;
+
+            if (debug) cout << "Raw rain offset 46 and 47: " << input_buffer[i+41] << input_buffer[i+42] << endl;
+            /* Nothing in the documentation about reading this figure, but to get it to mm/hr, appears the figure needs to be divided by 4 */
+            davis_data.rain = ((float) ((input_buffer[i+47] << 8) | input_buffer[i+46])*0.25);
+            if ((davis_data.rain < 0.0) || (davis_data.rain > 300.0)) {
+                davis_data.rain = ERROR_VALUE_FLOAT;
+            }
+            if (debug) cout << "\tRain (mm/hr): " << davis_data.rain << endl;
+
+            /* The data has been read, exit the for loop */
+            break;
+        }
+    }
+
+    /* Send the struct to the write function */
+    return write_result_string(davis_data);
+}
+
+/* This function writes a string based on the davis_data struct */
+string write_result_string(davis_data_t davis_data)
+{
+    stringstream stream;
+
+    /* Get the current date-time */
+    string datetime = get_current_datetime();
+
+    /* clear the stringstream and make the string to create the CSV entry */
+    stream.str(datetime);
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.inside_temperature;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.outside_temperature;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.inside_humidity;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.outside_humidity;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.wind_speed;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.wind_direction;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.barometer;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.solar_radiation;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.UV;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.rain;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.console_battery;
+
+    return stream.str();
+}
+
+/* This function will search the USB devices to find the one that corresponds to a Davis weather station */
+string find_usb_device(bool debug)
+{
+    struct udev *udev;
+    struct udev_enumerate *enumerate;
+    struct udev_list_entry *devices, *dev_list_entry;
+    struct udev_device *dev;
+    const char *vendor_id, *product_id, *serial, *path, *full_syspath, *device_found;
+    bool found = false;
+
+    /* Create the udev object */
+    udev = udev_new();
+    if (!udev) {
+        cout << "Can't create udev data type" << endl;
+        return string();
+    }
+
+    /* Create a list of the devices in the 'tty' subsystem. */
+    enumerate = udev_enumerate_new(udev);
+    udev_enumerate_add_match_subsystem(enumerate, "tty");
+    udev_enumerate_scan_devices(enumerate);
+    devices = udev_enumerate_get_list_entry(enumerate);
+    /* For loop that iterates through each tty device found */
+    udev_list_entry_foreach(dev_list_entry, devices) {
+        /* Get the file name of the /sys entry for the device */
+        full_syspath = udev_list_entry_get_name(dev_list_entry);
+        dev = udev_device_new_from_syspath(udev, full_syspath);
+        /* get the path to the device */
+        path = udev_device_get_devnode(dev);
+
+        /* Retrieve the USB device information */
+        dev = udev_device_get_parent_with_subsystem_devtype(dev, "usb", "usb_device");
+        if (!dev) {
+            udev_device_unref(dev);
+            continue;
+        }
+        /* Davis weather station Vendor ID: 10c4 and Product ID: ea61
+           Executing "lsusb" should see the line "...Bus 002 Device 002: ID 10c4:ea61 Cygnal Integrated Products, Inc...." */
+        vendor_id = udev_device_get_sysattr_value(dev, "idVendor");
+        product_id = udev_device_get_sysattr_value(dev, "idProduct");
+        serial = udev_device_get_sysattr_value(dev, "serial");
+        if ((strcmp(vendor_id, DAVIS_USBSERIAL_VENDOR) == 0) and (strcmp(product_id, DAVIS_USBSERIAL_PRODUCT) == 0)) {
+            if (found) {
+                cout << "Duplicate \"Cygnal Integrated Products\" USB found. Check by running \'lsusb\'. If necessary specify the /dev device manually" << endl;
+                return "";
+            }
+            found = true;
+            device_found = path;
+            if (debug) {
+                cout << "Device node: " << path << endl;
+                cout << "\tFull Path: " << full_syspath << endl;
+                cout << "\tVendor ID: " << vendor_id << endl;
+                cout << "\tProduct ID: " << product_id << endl;
+                cout << "\tSerial: " << serial << endl;
+            }
+        }
+        udev_device_unref(dev);
+    }
+
+    udev_enumerate_unref(enumerate);
+    udev_unref(udev);
+
+    string device(device_found, strlen(device_found));
+
+    if (found) {
+        if (debug) cout << "Device found: " << device << endl;
+        return device;
+    }
+    else {
+        cout << "Davis weather station USB Serial device not found. Check by running \'lsusb\'. If necessary specify the /dev device manually" << endl;
+        return string();
+    }
+}
