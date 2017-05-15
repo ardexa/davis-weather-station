@@ -41,6 +41,6 @@ a. Create a `RUN` scenario to schedule the Ardexa Davis program to run at regula
 b. Then use a `CAPTURE` scenario to collect the csv (comma separated) data from the filename `/opt/ardexa/davis/latest.csv`. This file contains a header entry (as the first line) that describes the CSV elements of the file.
 
 ## Help
-Contact Ardexa at support@ardexa.com, and we'll do our best efforts to help.
+Contact Ardexa, and we'll do our best efforts to help.
 
 
