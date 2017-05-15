@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Ardexa Pty Ltd. All rights reserved.
+/* Copyright (c) 2013-2017 Ardexa Pty Ltd. All rights reserved.
  *
  * This code is licensed under the MIT License (MIT).
  *
@@ -16,6 +16,7 @@
 
 #include <string>
 #include "arguments.hpp"
+#include "utils.hpp"
 #include "configs.hpp"
 #include <iostream>
 #include <unistd.h>
@@ -31,16 +32,14 @@ class arguments
         int initialize(int argc, char * argv[]);
         void usage();
         bool get_debug();
-        string get_directory();
-        bool get_filename_date();
+        string get_log_directory();
         string get_device();
 
     private:
         /* members are private */
         bool debug;
-        string directory;
+        string log_directory;
         string device;
-        bool filename_date;
         string usage_string;
 };
 

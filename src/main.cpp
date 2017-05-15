@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Ardexa Pty Ltd. All rights reserved.
+/* Copyright (c) 2013-2017 Ardexa Pty Ltd. All rights reserved.
  *
  * This code is licensed under the MIT License (MIT).
  *
@@ -22,12 +22,28 @@
 
 using namespace std;
 
+/* Global variables. */ 
+int g_debug = DEFAULT_DEBUG_VALUE;
+
+
+/* The main function */
 int main(int argc, char *argv[])
 {
     int result = 0;
     struct termios newtio;
     char buffer[BUFSIZE];
     string line, device;
+
+	/* If not run as root, exit */
+	if (check_root() == false) {
+		cout << "This program must be run as root" << endl;
+		return 1;
+	}
+
+	/* Check for existence of PID file */
+	if (!check_pid_file()) {
+		return 2;
+	}
 
     /* This class object defines the initial configuration parameters */
     arguments arguments_list;
@@ -37,7 +53,8 @@ int main(int argc, char *argv[])
     }
 
     device = arguments_list.get_device();
-    /* If the 'device' is empty, it means it must be searched since the user has not provided a device. If the USB device cannot be found, then exit */
+    /* If the 'device' is empty, it means it must be searched since the user has not provided a device. 
+       If the USB device cannot be found, then exit */
     if (device.empty()) {
         device = find_usb_device(arguments_list.get_debug());
         if (device.empty()) {
@@ -102,16 +119,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    string filename;
-    if (arguments_list.get_filename_date()) {
-        string current_date = get_current_date();
-        filename = "davis_" + current_date + ".log";
-    }
-    else {
-        filename = "davis.log";
-    }
+	 string current_date = get_current_date();
+	 string filename = "davis_" + current_date + ".log";
+
     /* Write the line to the log file */
-    log_line(arguments_list.get_debug(), arguments_list.get_directory(), filename, line);
+	 log_line(arguments_list.get_log_directory(), filename, line, HEADER_LINE, true);
 
     /* This is to cancel any remaining LPS events */
     result = write(modem_filedesc, "\r", 1);
