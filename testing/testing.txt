@@ -1,0 +1,22 @@
+
+TESTING ROUTINE 
+
+     WITH NO DAVIS PLUGGED IN
+          1.   run program with no arguments
+          2.   run program with -e (debug on)
+          3.   run with -e and an invalid tty device
+
+     WITH DAVIS PLUGGED IN
+          1.   remove /var/log/davis; run program with no arguments...check file written and header writtem
+          2.   run again...check values updated and appended
+          3.   run program with debug on (sudo read_davis -e) 
+          4.   run program with valid device defined (sudo ./read_davis -t /dev/ttyUSB0) 
+          5.   run program with invalid device defined and debug on ( sudo ./read_davis -e -t /dev/ttyUSB3)
+          6.   run program with filename_date...check filename. Also check datetime of log entry is correct (date; sudo ./read_davis  -f)
+          7.   run program with logging directory...check (date; sudo ./read_davis -d /tmp)
+          8.   run program with all valid arguments  (sudo ./read_davis -d /tmp -e -f -t /dev/ttyUSB0)
+          9.   run program with an invalid argument or 2 ... check it didn't log        
+
+     RUN TEST
+          1.   Let it run for a few days via a crontab entry
+
