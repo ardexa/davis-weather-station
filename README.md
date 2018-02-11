@@ -31,7 +31,7 @@ This application is written in C++. Once built, the application will query a Dav
 Usage: sudo ardexa-davis [-t device] [-d directory] [-f] [-e]
 ```
 -t <device> (optional) This is the name of the device (eg; '/dev/ttyUSB0'). If not specified, the application will find the device for you.
--d <directory> (optional) This is the name of the logging directory. Defaults to: "/opt/ardexa/davis/"
+-d <directory> (optional) This is the name of the logging directory. Defaults to: `/opt/ardexa/davis/`
 -e (optional) if specified, debug will be turned on.
 ```
 
