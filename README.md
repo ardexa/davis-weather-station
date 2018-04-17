@@ -28,7 +28,7 @@ sudo make install
 ## How does it work
 This application is written in C++. Once built, the application will query a Davis weather station using the USB/serial link. Each time this application is run, data will be written to log files on disk in a directory specified via the command line. Usage and command line parameters are as follows. Note that the applications should be run as root only since it has access to a device in the `/dev` directory. 
 
-Usage: sudo ardexa-davis [-t device] [-d directory] [-f] [-e]
+Usage: sudo ardexa-davis [-t device] [-d directory] [-e]
 ```
 -t <device> (optional) This is the name of the device (eg; '/dev/ttyUSB0'). If not specified, the application will find the device for you.
 -d <directory> (optional) This is the name of the logging directory. Defaults to: `/opt/ardexa/davis/`

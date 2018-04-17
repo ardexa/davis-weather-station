@@ -230,7 +230,7 @@ string get_current_datetime()
     timeinfo = localtime(&rawtime);
 
     /* This includes the time zone at the end of the time */
-    strftime(buffer, DATESIZE, "%H:%M:%S", timeinfo);
+    strftime(buffer, DATESIZE, "%H:%M:%S%z", timeinfo);
 
     string time(buffer);
 
@@ -443,7 +443,7 @@ string write_result_string(davis_data_t davis_data)
     string datetime = get_current_datetime();
 
     /* clear the stringstream and make the string to create the CSV entry */
-    stream.str(datetime);
+    stream << datetime;
     stream << ",";
     stream << fixed << setprecision(2) << davis_data.inside_temperature;
     stream << ",";

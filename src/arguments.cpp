@@ -23,7 +23,7 @@ arguments::arguments()
     this->log_directory = DEFAULT_LOG_DIRECTORY;
 
     /* Usage string */
-    this->usage_string = "Usage: ardexa-davis [-t device] [-d directory] [-f] [-e]\n";
+    this->usage_string = "Usage: ardexa-davis [-t device] [-d directory] [-e]\n";
 }
 
 /* This method is to initialize the member variables based on the command line arguments */
