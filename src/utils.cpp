@@ -310,7 +310,7 @@ bool check_root()
 }
 
 /* This function extracts the results, and returns a string */
-string extract_results(char *input_buffer, int chars_received, bool debug)
+string extract_results(char *input_buffer, int chars_received, bool debug, bool wdspd_kmh, float barocal)
 {
     davis_data_t davis_data;
 
@@ -326,6 +326,14 @@ string extract_results(char *input_buffer, int chars_received, bool debug)
     davis_data.solar_radiation = ERROR_VALUE_FLOAT;
     davis_data.console_battery = ERROR_VALUE_FLOAT;
     davis_data.wind_direction = ERROR_VALUE_FLOAT;
+    davis_data.soil_temp1 = ERROR_VALUE_FLOAT;
+    davis_data.soil_moist1 = ERROR_VALUE_FLOAT;
+    davis_data.soil_temp2 = ERROR_VALUE_FLOAT;
+    davis_data.soil_moist2 = ERROR_VALUE_FLOAT;
+    davis_data.soil_temp3 = ERROR_VALUE_FLOAT;
+    davis_data.soil_moist3 = ERROR_VALUE_FLOAT;
+    davis_data.soil_temp4 = ERROR_VALUE_FLOAT;
+    davis_data.soil_moist4 = ERROR_VALUE_FLOAT;
 
     if (debug) cout << "Chars received = " << chars_received << endl;
     for (int i = 0; i < chars_received; i++) {
@@ -344,7 +352,15 @@ string extract_results(char *input_buffer, int chars_received, bool debug)
             if ((davis_data.barometer < 800.0) || (davis_data.barometer > 1100.0)) {
                 davis_data.barometer = ERROR_VALUE_FLOAT;
             }
-            if (debug) cout << "\tBarometer (hectopascals): " << davis_data.barometer << endl;
+            /* calibrate the barometer */
+            if (debug) {
+                cout << "\t Barometer uncalibrated (hectopascals): " << davis_data.barometer << endl;
+            }
+            davis_data.barometer = davis_data.barometer * barocal;
+            if (debug) {
+                cout << "\t Barometer (hectopascals): " << davis_data.barometer << endl;
+                cout << "\t Baro calibration value: " << barocal << endl;
+            }
 
             if (debug) cout << "Raw outside temp offset 12 and 13: " << input_buffer[i+12] << input_buffer[i+13] << endl;
             /* convert Fahrenheit to Celsius */
@@ -368,7 +384,16 @@ string extract_results(char *input_buffer, int chars_received, bool debug)
             if ( (davis_data.wind_speed < 0.0) || (davis_data.wind_speed > 50.0)) {
                 davis_data.wind_speed = ERROR_VALUE_FLOAT;
             }
-            if (debug) cout << "\tWind speed (m/s): " << davis_data.wind_speed << endl;
+            else {
+                /* Convert the wind speed from m/s to km/h if requested by the user */
+                if (wdspd_kmh) {
+                    davis_data.wind_speed = davis_data.wind_speed * MS_TO_KMH;
+                    if (debug) cout << "\tWind speed (km/h): " << davis_data.wind_speed << endl;
+                }
+                else {
+                    if (debug) cout << "\tWind speed (m/s): " << davis_data.wind_speed << endl;
+                }
+            }
 
             if (debug) cout << "Raw wind direction offset 16 and 17: " << input_buffer[i+16] << input_buffer[i+17] << endl;
             davis_data.wind_direction = (float) ((input_buffer[i+17] << 8) | input_buffer[i+16]);
@@ -425,6 +450,46 @@ string extract_results(char *input_buffer, int chars_received, bool debug)
             }
             if (debug) cout << "\tRain (mm/hr): " << davis_data.rain << endl;
 
+            /* Soil temperature 1 reading...NB A special Davis device is required to read this */
+            if (debug) cout << "Soil temperature 1 offset 25: " << input_buffer[i+25] << endl;
+            davis_data.soil_temp1 = (((float) (input_buffer[i+25]) + -90) - 32.0) * 5/9;
+            if (debug) cout << "\tSoil temperature 1 (Celsius): " << davis_data.soil_temp1 << endl;
+
+            /* Soil Moisture 1 */
+            if (debug) cout << "Soil moisture 1 offset 62: " << input_buffer[i+62] << endl;
+            davis_data.soil_moist1 = (float) (input_buffer[i+62]);
+            if (debug) cout << "\tSoil moisture 1 (Centibar): " << davis_data.soil_moist1 << endl;
+
+            /* Soil temperature 2 reading...NB A special Davis device is required to read this */
+            if (debug) cout << "Soil temperature 2 offset 26: " << input_buffer[i+26] << endl;
+            davis_data.soil_temp2 = (((float) (input_buffer[i+26]) + -90) - 32.0) * 5/9;
+            if (debug) cout << "\tSoil temperature 2 (Celsius): " << davis_data.soil_temp2 << endl;
+
+            /* Soil Moisture 2 */
+            if (debug) cout << "Soil moisture 2 offset 63: " << input_buffer[i+63] << endl;
+            davis_data.soil_moist2 = (float) (input_buffer[i+63]);
+            if (debug) cout << "\tSoil moisture 2 (Centibar): " << davis_data.soil_moist2 << endl;
+
+            /* Soil temperature 3 reading...NB A special Davis device is required to read this */
+            if (debug) cout << "Soil temperature 3 offset 27: " << input_buffer[i+27] << endl;
+            davis_data.soil_temp3 = (((float) (input_buffer[i+27]) + -90) - 32.0) * 5/9;
+            if (debug) cout << "\tSoil temperature 3 (Celsius): " << davis_data.soil_temp3 << endl;
+
+            /* Soil Moisture 3 */
+            if (debug) cout << "Soil moisture 3 offset 64: " << input_buffer[i+64] << endl;
+            davis_data.soil_moist3 = (float) (input_buffer[i+64]);
+            if (debug) cout << "\tSoil moisture 3 (Centibar): " << davis_data.soil_moist3 << endl;
+
+            /* Soil temperature 4 reading...NB A special Davis device is required to read this */
+            if (debug) cout << "Soil temperature 4 offset 28: " << input_buffer[i+28] << endl;
+            davis_data.soil_temp4 = (((float) (input_buffer[i+28]) + -90) - 32.0) * 5/9;
+            if (debug) cout << "\tSoil temperature 4 (Celsius): " << davis_data.soil_temp3 << endl;
+
+            /* Soil Moisture 4 */
+            if (debug) cout << "Soil moisture 4 offset 65: " << input_buffer[i+65] << endl;
+            davis_data.soil_moist4 = (float) (input_buffer[i+65]);
+            if (debug) cout << "\tSoil moisture 4 (Centibar): " << davis_data.soil_moist4 << endl;
+
             /* The data has been read, exit the for loop */
             break;
         }
@@ -466,9 +531,25 @@ string write_result_string(davis_data_t davis_data)
     stream << fixed << setprecision(2) << davis_data.rain;
     stream << ",";
     stream << fixed << setprecision(2) << davis_data.console_battery;
-
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.soil_temp1;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.soil_moist1;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.soil_temp2;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.soil_moist2;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.soil_temp3;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.soil_moist3;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.soil_temp4;
+    stream << ",";
+    stream << fixed << setprecision(2) << davis_data.soil_moist4;
     return stream.str();
 }
+
 
 /* This function will search the USB devices to find the one that corresponds to a Davis weather station */
 string find_usb_device(bool debug)

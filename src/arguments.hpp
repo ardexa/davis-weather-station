@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2017 Ardexa Pty Ltd. All rights reserved.
+/* Copyright (c) 2013-2018 Ardexa Pty Ltd. All rights reserved.
  *
  * This code is licensed under the MIT License (MIT).
  *
@@ -34,6 +34,8 @@ class arguments
         bool get_debug();
         string get_log_directory();
         string get_device();
+        float barocal;
+        bool wdspd_kmh;
 
     private:
         /* members are private */

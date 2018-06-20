@@ -14,7 +14,7 @@ The Davis Weather station can be connected to the Raspberry Pi or Linux device v
 To use this application, do the following. It will install the `ardexa-davis` binary in the directory `/usr/local/bin`
 ```
 sudo apt-get update
-sudo apt-get install libudev-dev
+sudo apt-get install -y libudev-dev cmake
 cd
 git clone https://github.com/ardexa/davis-weather-station.git
 cd davis-weather-station
@@ -28,11 +28,13 @@ sudo make install
 ## How does it work
 This application is written in C++. Once built, the application will query a Davis weather station using the USB/serial link. Each time this application is run, data will be written to log files on disk in a directory specified via the command line. Usage and command line parameters are as follows. Note that the applications should be run as root only since it has access to a device in the `/dev` directory. 
 
-Usage: sudo ardexa-davis [-t device] [-d directory] [-e]
+Usage: sudo ardexa-davis [-t device] [-d directory] [-e] [-w] [-b barometer calibration]
 ```
 -t <device> (optional) This is the name of the device (eg; '/dev/ttyUSB0'). If not specified, the application will find the device for you.
 -d <directory> (optional) This is the name of the logging directory. Defaults to: `/opt/ardexa/davis/`
--e (optional) if specified, debug will be turned on.
+-e (optional) if specified, debug will be turned on
+-w (optional) if specified, wind speed is in km/h, not m/s
+-b (optional) if specified, will calibrate the barometer using this number as a multiplication to the raw value
 ```
 
 ## Collecting to the Ardexa cloud

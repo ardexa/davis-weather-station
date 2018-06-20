@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
         result = read(modem_filedesc, buffer, sizeof(buffer));
         /* 100 is the length of a LOOP command (99 chars) plus an ACK */
         if (result > LOOP_LENGTH) {
-            line = extract_results(buffer, result, arguments_list.get_debug());
+            line = extract_results(buffer, result, arguments_list.get_debug(), arguments_list.wdspd_kmh, arguments_list.barocal);
             break;
         }
         /* This else is just for debugging */
@@ -123,7 +123,12 @@ int main(int argc, char *argv[])
 	 string filename = "davis_" + current_date + ".log";
 
     /* Write the line to the log file */
-	 log_line(arguments_list.get_log_directory(), filename, line, HEADER_LINE, true);
+    if (arguments_list.wdspd_kmh) {
+        log_line(arguments_list.get_log_directory(), filename, line, HEADER_LINE, true);
+    } 
+    else {
+        log_line(arguments_list.get_log_directory(), filename, line, HEADER_LINE_KMH, true);
+    }
 
     /* This is to cancel any remaining LPS events */
     result = write(modem_filedesc, "\r", 1);
