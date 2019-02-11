@@ -40,7 +40,7 @@ using namespace std;
 int log_line(string directory, string filename, string line, string header, bool log_to_latest);
 string get_current_date();
 string get_current_datetime();
-string extract_results(char *input_buffer, int chars_received, bool debug, bool wdspd_kmh, float barocal);
+string extract_results(char *input_buffer, int chars_received, bool debug, bool wdspd_kmh, float barocal, bool winddir_180);
 string write_result_string(davis_data_t davis_data);
 string find_usb_device(bool debug);
 bool create_directory(string directory);

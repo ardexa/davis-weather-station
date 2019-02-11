@@ -310,7 +310,7 @@ bool check_root()
 }
 
 /* This function extracts the results, and returns a string */
-string extract_results(char *input_buffer, int chars_received, bool debug, bool wdspd_kmh, float barocal)
+string extract_results(char *input_buffer, int chars_received, bool debug, bool wdspd_kmh, float barocal, bool winddir_180)
 {
     davis_data_t davis_data;
 
@@ -397,6 +397,14 @@ string extract_results(char *input_buffer, int chars_received, bool debug, bool 
 
             if (debug) cout << "Raw wind direction offset 16 and 17: " << input_buffer[i+16] << input_buffer[i+17] << endl;
             davis_data.wind_direction = (float) ((input_buffer[i+17] << 8) | input_buffer[i+16]);
+
+            /* Alter the wind direction by 180 degs, if required */
+            if (winddir_180) {
+                davis_data.wind_direction = davis_data.wind_direction + 180.0;
+                if (davis_data.wind_direction > 360.0) {
+                    davis_data.wind_direction = davis_data.wind_direction - 360.0;
+                }
+
             if ( (davis_data.wind_direction < 0.0) || (davis_data.wind_direction > 360.0)) {
                 davis_data.wind_direction = ERROR_VALUE_FLOAT;
             }

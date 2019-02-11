@@ -36,6 +36,7 @@ class arguments
         string get_device();
         float barocal;
         bool wdspd_kmh;
+        bool winddir_180;
 
     private:
         /* members are private */

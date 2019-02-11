@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
         result = read(modem_filedesc, buffer, sizeof(buffer));
         /* 100 is the length of a LOOP command (99 chars) plus an ACK */
         if (result > LOOP_LENGTH) {
-            line = extract_results(buffer, result, arguments_list.get_debug(), arguments_list.wdspd_kmh, arguments_list.barocal);
+            line = extract_results(buffer, result, arguments_list.get_debug(), arguments_list.wdspd_kmh, arguments_list.barocal, arguments_list.winddir_180);
             break;
         }
         /* This else is just for debugging */
