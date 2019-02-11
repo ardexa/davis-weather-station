@@ -35,6 +35,7 @@ Usage: sudo ardexa-davis [-t device] [-d directory] [-e] [-w] [-b barometer cali
 -e (optional) if specified, debug will be turned on
 -w (optional) if specified, wind speed is in km/h, not m/s
 -b (optional) if specified, will calibrate the barometer using this number as a multiplication to the raw value
+-z (optional) if specified, wind direction will be shifted 180 degs (to cater for the anemometer arm pointing south)
 ```
 
 ## Collecting to the Ardexa cloud
