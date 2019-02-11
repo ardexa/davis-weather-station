@@ -404,7 +404,7 @@ string extract_results(char *input_buffer, int chars_received, bool debug, bool 
                 if (davis_data.wind_direction > 360.0) {
                     davis_data.wind_direction = davis_data.wind_direction - 360.0;
                 }
-
+            }
             if ( (davis_data.wind_direction < 0.0) || (davis_data.wind_direction > 360.0)) {
                 davis_data.wind_direction = ERROR_VALUE_FLOAT;
             }
