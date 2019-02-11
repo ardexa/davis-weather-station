@@ -26,7 +26,7 @@ arguments::arguments()
     this->winddir_180 = false;
 
     /* Usage string */
-    this->usage_string = "Usage: ardexa-davis [-t device] [-d directory] [-e] [-w] [-b barocal] \n";
+    this->usage_string = "Usage: ardexa-davis [-t device] [-d directory] [-e] [-w] [-b barocal] [-z]\n";
 }
 
 /* This method is to initialize the member variables based on the command line arguments */
@@ -34,7 +34,7 @@ int arguments::initialize(int argc, char * argv[])
 {
 	int opt;
 	bool ret_error = false;
-    string barocal_raw = "";
+    string barocal_raw = "1.0";
 
     /**
      * -t <device> (optional) name of the /dev/ device
