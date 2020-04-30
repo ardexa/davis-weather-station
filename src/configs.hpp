@@ -32,10 +32,12 @@
 
 
 
-/* Davis weather station Vendor ID: 10c4 and Product ID: ea61
-   Executing "lsusb" should see the line "...Bus 002 Device 002: ID 10c4:ea61 Cygnal Integrated Products, Inc...." */
+/* Davis weather station Vendor ID: 10c4 and Product ID: ea61 ... or .... Bus 001 Device 009: ID 10c4:ea60
+   Executing "lsusb" should see the line "...Bus 002 Device 002: ID 10c4:ea61 Cygnal Integrated Products, Inc...." 
+   Bus 001 Device 009: ID 10c4:ea60 Cygnal Integrated Products, Inc. CP2102/CP2109 UART Bridge Controller [CP210x family] */
 #define DAVIS_USBSERIAL_VENDOR "10c4"
 #define DAVIS_USBSERIAL_PRODUCT "ea61"
+#define DAVIS_USBSERIAL_PRODUCT2 "ea60"
 #define PID_FILE "/run/ardexa-davis.pid"
 #define DEFAULT_DEBUG_VALUE 0
 

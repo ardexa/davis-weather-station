@@ -600,7 +600,8 @@ string find_usb_device(bool debug)
         vendor_id = udev_device_get_sysattr_value(dev, "idVendor");
         product_id = udev_device_get_sysattr_value(dev, "idProduct");
         serial = udev_device_get_sysattr_value(dev, "serial");
-        if ((strcmp(vendor_id, DAVIS_USBSERIAL_VENDOR) == 0) and (strcmp(product_id, DAVIS_USBSERIAL_PRODUCT) == 0)) {
+        if (((strcmp(vendor_id, DAVIS_USBSERIAL_VENDOR) == 0) and (strcmp(product_id, DAVIS_USBSERIAL_PRODUCT) == 0)) or
+           ((strcmp(vendor_id, DAVIS_USBSERIAL_VENDOR) == 0) and (strcmp(product_id, DAVIS_USBSERIAL_PRODUCT2) == 0))) {
             if (found) {
                 cout << "Duplicate \"Cygnal Integrated Products\" USB found. Check by running \'lsusb\'. If necessary specify the /dev device manually" << endl;
                 return "";
