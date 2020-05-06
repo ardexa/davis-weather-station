@@ -25,10 +25,10 @@
 #define LOOP_LENGTH 100
 #define MS_TO_KMH 3.6
 
-#define HEADER_LINE "#Date,Time,Inside Temperature (celsius),Outside Temperature (celsius),Inside Humidity (percent),Outside Humidity (percent),Wind Speed (m/s),Wind Direction (degrees),Barometer (hectopascals),Solar Radiation (w/m^2),UV Index,Rain (mm),Console Battery (volts), Soil Temperature 1 (C), Soil Moisture 1 (centibar), Soil Temperature 2 (C), Soil Moisture 2 (centibar), Soil Temperature 3 (C), Soil Moisture 3 (centibar), Soil Temperature 4 (C), Soil Moisture 4 (centibar)"
+#define HEADER_LINE "# DateTime,Inside Temperature (celsius),Outside Temperature (celsius),Inside Humidity (percent),Outside Humidity (percent),Wind Speed (m/s),Wind Direction (degrees),Barometer (hectopascals),Solar Radiation (w/m^2),UV Index,Rain (mm),Console Battery (volts), Soil Temperature 1 (C), Soil Moisture 1 (centibar), Soil Temperature 2 (C), Soil Moisture 2 (centibar), Soil Temperature 3 (C), Soil Moisture 3 (centibar), Soil Temperature 4 (C), Soil Moisture 4 (centibar)"
 
 
-#define HEADER_LINE_KMH "#Date,Time,Inside Temperature (celsius),Outside Temperature (celsius),Inside Humidity (percent),Outside Humidity (percent),Wind Speed (km/h),Wind Direction (degrees),Barometer (hectopascals),Solar Radiation (w/m^2),UV Index,Rain (mm),Console Battery (volts), Soil Temperature 1 (C), Soil Moisture 1 (centibar), Soil Temperature 2 (C), Soil Moisture 2 (centibar), Soil Temperature 3 (C), Soil Moisture 3 (centibar), Soil Temperature 4 (C), Soil Moisture 4 (centibar)"
+#define HEADER_LINE_KMH "# DateTime,Inside Temperature (celsius),Outside Temperature (celsius),Inside Humidity (percent),Outside Humidity (percent),Wind Speed (km/h),Wind Direction (degrees),Barometer (hectopascals),Solar Radiation (w/m^2),UV Index,Rain (mm),Console Battery (volts), Soil Temperature 1 (C), Soil Moisture 1 (centibar), Soil Temperature 2 (C), Soil Moisture 2 (centibar), Soil Temperature 3 (C), Soil Moisture 3 (centibar), Soil Temperature 4 (C), Soil Moisture 4 (centibar)"
 
 
 
